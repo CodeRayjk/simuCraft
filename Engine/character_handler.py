@@ -4,37 +4,39 @@ class ActionStatus:
     def __init__(self, character):
         self.current_action = None
         self.ready_time = None
+        self.cast_time = None
         self.latency = 0.005
+        self.globalcd = 1
         self.character = character
 
     def update(self, time):
         if self.ready_time is None:
             return
 
-        if time.get_time() >= self.ready_time:
-            if self.current_action is not None:
-                logging.info("%.2f - [%s] End casting: %s" % (time.get_time(),
-                                                              self.character.name,
-                                                              self.current_action.name))
-            self.ready_time = None
+        if self.cast_time is not None and time.get_time() >= self.cast_time:
+            logging.info("%.2f - [%s] Casting done: %s" % (time.get_time(),
+                                                           self.character.name,
+                                                           self.current_action.name))
             self.current_action = None
+            self.cast_time = None
+
+        if time.get_time() >= self.ready_time:
+            self.ready_time = None
 
     def is_active(self):
         return self.ready_time is not None
 
     def start_action(self, action, time):
+        logging.info("%.2f - [%s] Casting: %s" % (time.get_time(),
+                                                  self.character.name,
+                                                  action.name))
         if action.cast_time > 0:
-            logging.info("%.2f - [%s] Start casting: %s" % (time.get_time(),
-                                                            self.character.name,
-                                                            action.name))
             self.current_action = action
-            self.ready_time = time.get_time() + action.cast_time + self.latency
+            self.ready_time = time.get_time() + max(action.cast_time, self.globalcd) + self.latency
+            self.cast_time = time.get_time() + action.cast_time
 
         else:
-            logging.info("%.2f - [%s] Casting: %s" % (time.get_time(),
-                                                      self.character.name,
-                                                      action.name))
-            self.ready_time = time.get_time() + 1 + self.latency
+            self.ready_time = time.get_time() + self.globalcd + self.latency
 
 
 class CharacterHandler:
