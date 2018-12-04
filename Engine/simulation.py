@@ -12,6 +12,10 @@ class SimulatedTime:
     def end_of_time(self):
         return self._current_time >= self._total_time
 
+    def get_time(self):
+        return self._current_time
+
+
 
 class Simulation:
     def __init__(self, total_time, target, characters):
@@ -24,12 +28,10 @@ class Simulation:
         for character in characters:
             self.character_handlers.append(CharacterHandler(character))
 
-
     def run(self):
         while not self.time.end_of_time():
             self.update_handlers()
             self.time.tick()
-
 
     def update_handlers(self):
         for handler in self.character_handlers:

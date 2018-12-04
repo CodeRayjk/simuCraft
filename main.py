@@ -3,8 +3,10 @@
 import argparse
 import logging
 
+import Engine.simulation as sim
+
 logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(funcName)s -  %(levelname)s - %(message)s')
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 
@@ -19,12 +21,14 @@ def parse():
 
     return parser.parse_args()
 
+
 def run(args):
 
 
     logging.debug('INSIDE RUN')
 
-
+    simulation = sim.Simulation(10, None, [None])
+    simulation.run()
 
     return 0
 
