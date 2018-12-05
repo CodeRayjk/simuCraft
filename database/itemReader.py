@@ -83,20 +83,106 @@ stat_types: 1 - X  :  2 - X  : 3 - Agility : 4 - Strength : 5 - Intellect : 6 - 
 "Duration",
 "ExtraFlags"
 
+dmg_type = 0 - Normal dmg : 1 - Holy dmg : 2 - Fire dmg : 3 - Nature dmg : 4 - Frost dmg  : 5 - Shadow dmg : 6 - Arcane dmg
+
+
 '''
+dmgType ={ '0' : 'Normal' , '1' : 'Holy', '2' : 'Fire' , '3' : 'Nature', '4' : 'Frost', '5' : 'Shadow', '6' : 'Arcane'}
+
 
 attributeConv = {'3': 'Agility' , '4':'Strength', '5' : 'Intellect', '6' : 'Spirit', '7' : 'Stamina'}
+
+class Item():
+    def __init__(self, **kwargs):
+        self.info = kwargs
+
+    def addAttribute(self,**kwargs):
+        self.info.update(kwargs)
+
+    def print(self):
+        for key,item in self.info.items():
+            print('%s:%s' %(key,item))
+
+
+
+class ObjectReader():
+    def __init__(self):
+        readItem = csv.reader(open('C:\\Users\\Rayjk\PycharmProjects\simuCraft\database\item_template.csv'),delimiter = ',')
+        self.allItem = []
+        for line in readItem:
+            self.indexItem = line
+            break
+        for line in readItem:
+            self.allItem.append(line)
+
+    def getItem(self,itemName):
+        theItem = None
+        for row in self.allItem:
+            if itemName == row[self.indexItem.index('name')]:
+                theItem = Item(Name = row[self.indexItem.index('name')])
+
+                print(row)
+
+                if row[self.indexItem.index('armor')] is not '0':
+                    theItem.addAttribute(Armor = row[self.indexItem.index('armor')])
+                    #print('Armor : %s' % row[self.indexItem.index('armor')])
+
+                for i in range(1, 6):
+                    if row[self.indexItem.index('stat_type%d' % i)] is not '0':
+                        if row[self.indexItem.index('stat_type%d' % i)] == '3':
+                            theItem.addAttribute(Agility = row[self.indexItem.index('stat_value%d' % i)])
+                        elif row[self.indexItem.index('stat_type%d' % i)] == '4':
+                            theItem.addAttribute(Strength=row[self.indexItem.index('stat_value%d' % i)])
+                        elif row[self.indexItem.index('stat_type%d' % i)] == '5':
+                            theItem.addAttribute(Intellect=row[self.indexItem.index('stat_value%d' % i)])
+                        elif row[self.indexItem.index('stat_type%d' % i)] == '6':
+                            theItem.addAttribute(Spirit=row[self.indexItem.index('stat_value%d' % i)])
+                        elif row[self.indexItem.index('stat_type%d' % i)] == '7':
+                            theItem.addAttribute(Stamina=row[self.indexItem.index('stat_value%d' % i)])
+
+                for i in range(1, 6):
+                    if row[self.indexItem.index('dmg_min%d' % i)] is not '0':
+                        theItem.addAttribute(dmg_min = row[self.indexItem.index('dmg_min%d' % i)])
+                        theItem.addAttribute(dmg_max = row[self.indexItem.index('dmg_max%d' % i)])
+                        theItem.addAttribute(dmg_type=dmgType[row[self.indexItem.index('dmg_type%d' % i)]])
+
+
+                if row[self.indexItem.index('holy_res')] is not '0':
+                    theItem.addAttribute(holy_res=row[self.indexItem.index('holy_res')])
+                if row[self.indexItem.index('fire_res')] is not '0':
+                    theItem.addAttribute(fire_res=row[self.indexItem.index('fire_res')])
+                if row[self.indexItem.index('nature_res')] is not '0':
+                    theItem.addAttribute(nature_res=row[self.indexItem.index('nature_res')])
+                if row[self.indexItem.index('frost_res')] is not '0':
+                    theItem.addAttribute(frost_res=row[self.indexItem.index('frost_res')])
+                if row[self.indexItem.index('shadow_res')] is not '0':
+                    theItem.addAttribute(shadow_res=row[self.indexItem.index('shadow_res')])
+                if row[self.indexItem.index('arcane_res')] is not '0':
+                    theItem.addAttribute(arcane_res=row[self.indexItem.index('arcane_res')])
+
+
+        return theItem
+
+    def getSpell(self):
+        pass
+
+
+oReader = ObjectReader()
+
+edward = oReader.getItem('Wand of Eternal Light')
+ragnaros = oReader.getItem('Finkle\'s Lava Dredger')
+
+edward.print()
+ragnaros.print()
+
+"""""
+
+
 
 AllItem = csv.reader(open('C:\\Users\\Rayjk\PycharmProjects\simuCraft\database\item_template.csv'),delimiter = ',')
 first = True
 firstRow = None
 for row in AllItem:
-
-    if first:
-        firstRow = row
-        #print(firstRow)
-        first = False
-
     for item in row:
         if 'Might of' in item:
             #print(row)
@@ -115,5 +201,5 @@ for row in AllItem:
             #print('%s : %s' % (attributeConv[row[firstRow.index('stat_type3')]], row[firstRow.index('stat_value3')]))
 
 
-
+"""
 
