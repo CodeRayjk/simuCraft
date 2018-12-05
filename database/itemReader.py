@@ -1,5 +1,7 @@
 
 import csv
+import sys,os
+my_path = os.path.abspath(os.path.dirname(__file__))
 ''''
 "2825","2","2","Bow of Searing Arrows","20552","4","0","1","73609","14721","15","-1","-1","42","37","0","0","0","0","0","0","0","0","1","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","47","88","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","2700","2","100","29624","1","0","0","-1","0","-1","0","0","0","0","-1","0","-1","0","0","0","0","-1","0","-1","0","0","0","0","-1","0","-1","0","0","0","0","0","0","-1","2","","0","0","0","0","0","2","0","0","0","0","90","0","0","0","","61","0","0","0","0","0"
 "22465","4","3","Earthshatter Legguards","35754","4","0","1","763444","152688","7","64","255","88","60","0","0","0","0","0","0","0","0","1","0","7","28","5","30","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","484","0","0","0","0","0","0","0","0","0","18038","1","0","0","-1","0","-1","21365","1","0","0","-1","0","-1","0","0","0","0","-1","0","-1","0","0","0","0","-1","0","-1","0","0","0","0","0","0","0","1","","0","0","0","0","0","5","0","0","0","527","105","0","0","0","","65","0","0","0","0","0"
@@ -92,6 +94,18 @@ dmgType ={ '0' : 'Normal' , '1' : 'Holy', '2' : 'Fire' , '3' : 'Nature', '4' : '
 
 attributeConv = {'3': 'Agility' , '4':'Strength', '5' : 'Intellect', '6' : 'Spirit', '7' : 'Stamina'}
 
+# Slots = '1' : 'head' , '2' : 'amulet', '3':'shoulders','5': 'chest','6':'waist', '7':'legs','8':'feet'
+# '9': 'wrist','10': 'hands','11:'Rings','12':'trinket','13':'weapon','16': 'cloak','17':'Two-hand',
+# '21':'main weapon': '22':'off weapon', '14': 'shield' , '28' : 'idol/lib/totem', '15': 'bow' ,
+# '26' : 'gun/crossbow/wand'
+
+slots ={ '1' : 'head' , '2' : 'amulet', '3':'shoulders','5': 'chest','6':'waist', '7':'legs','8':'feet',
+ '9': 'wrist','10': 'hands','11':'Rings','12':'trinket','13':'One-hand','16': 'cloak', '17':'Two-hand',
+ '21':'Main hand', '22':'Off hand', '14': 'Shield' , '28' : 'idol/lib/totem', '15': 'Ranged' ,
+ '26' : 'Ranged'}
+
+
+
 class Item():
     def __init__(self, **kwargs):
         self.info = kwargs
@@ -107,7 +121,8 @@ class Item():
 
 class ObjectReader():
     def __init__(self):
-        readItem = csv.reader(open('C:\\Users\\Rayjk\PycharmProjects\simuCraft\database\item_template.csv'),delimiter = ',')
+        filePath = os.path.join(my_path, "item_template.csv")
+        readItem = csv.reader(open(filePath),delimiter = ',')
         self.allItem = []
         for line in readItem:
             self.indexItem = line
@@ -121,7 +136,7 @@ class ObjectReader():
             if itemName == row[self.indexItem.index('name')]:
                 theItem = Item(Name = row[self.indexItem.index('name')])
 
-                print(row)
+                print(row[self.indexItem.index('InventoryType')])
 
                 if row[self.indexItem.index('armor')] is not '0':
                     theItem.addAttribute(Armor = row[self.indexItem.index('armor')])
@@ -161,16 +176,23 @@ class ObjectReader():
                     theItem.addAttribute(arcane_res=row[self.indexItem.index('arcane_res')])
 
 
+
+
+                if row[self.indexItem.index('InventoryType')] is not '0':
+                    theItem.addAttribute(InventoryType=slots[row[self.indexItem.index('InventoryType')]])
+
+
         return theItem
 
     def getSpell(self):
         pass
 
 
+
 oReader = ObjectReader()
 
-edward = oReader.getItem('Wand of Eternal Light')
-ragnaros = oReader.getItem('Finkle\'s Lava Dredger')
+edward = oReader.getItem('Blade of Eternal Darkness')
+ragnaros = oReader.getItem('Draconic Avenger')
 
 edward.print()
 ragnaros.print()
