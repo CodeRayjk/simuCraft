@@ -1,6 +1,7 @@
 import time
 
-from Engine.character_handler import CharacterHandler, Character
+from model.character import Character
+from Engine.character_handler import CharacterHandler
 
 class SimulatedTime:
     def __init__(self, total_time):
@@ -33,12 +34,15 @@ class Simulation:
     def setup_charater_handlers(self, characters):
         for name in characters:
             character = Character(name)
-            self.character_handlers.append(CharacterHandler(character))
+            self.character_handlers.append(CharacterHandler(character, self.target))
 
     def run(self):
         while not self.time.end_of_time():
             self.update_handlers()
             self.time.tick()
+
+        for handler in self.character_handlers:
+            handler.print_statistics()
 
     def update_handlers(self):
         for handler in self.character_handlers:

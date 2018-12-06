@@ -27,7 +27,8 @@ def run(args):
 
     logging.debug('INSIDE RUN')
 
-    simulation = sim.Simulation(8, None, ["Gurkis", "Rayjk"])
+    simulation = sim.Simulation(15, None, ["Gurkis", "Rayjk"])
+    # simulation = sim.Simulation(20, None, ["Gurkis"])
     simulation.run()
 
     return 0
