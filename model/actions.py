@@ -14,8 +14,7 @@ class Spell:
 
 
 class AutoAttack:
-    def __init__(self, attack_speed, min_dmg, max_dmg):
-        self.attack_speed = attack_speed
+    def __init__(self, min_dmg, max_dmg):
         self.min_dmg = min_dmg
         self.max_dmg = max_dmg
 
