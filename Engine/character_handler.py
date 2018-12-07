@@ -1,31 +1,32 @@
 import logging
 from random import randint
 
-from model.spell import Spell
-
+from model.actions import Spell
+from Engine.action_handler import get_action_handler
 
 class CharacterHandler:
     def __init__(self, character, target):
         self.character = character
         self.target = target
         self.status = ActionStatus(self.character)
-        self.action_handler = ActionHandler(self.character)
+        self.action_handler = get_action_handler(character)
         self.damage_counter = DamageCounter(self.character, self.target)
 
     def update(self, time):
         spell = self.status.update(time)
         if spell is not None:
-            self.damage_counter.update_damage_done(spell)
+            self.damage_counter.update_damage_done(spell, time)
 
         while self.status.is_ready():
-            self.cast_next_spell(time)
+            self.do_next_action(time)
 
-    def cast_next_spell(self, time):
-        spell = self.action_handler.get_next_spell(time)
-        self.status.set_ready_time(spell, time)
+    def do_next_action(self, time):
+        action = self.action_handler.get_next_action(time)
+        self.status.set_new_action(action, time)
 
         if not self.status.is_casting():
-            self.damage_counter.update_damage_done(spell)
+            self.damage_counter.update_damage_done(action, time)
+
 
     def print_statistics(self):
         logging.info("[%s] Damage done: %s" % (self.character,
@@ -34,11 +35,12 @@ class CharacterHandler:
 
 class ActionStatus:
     def __init__(self, character):
-        self.current_spell = None
+        self.current_action = None
         self.ready_time = None
         self.cast_time = None
+        self.auto_time = 0.0
         self.latency = 0.005
-        self.globalcd = 1
+        self.globalcd = 1.5
         self.character = character
 
     def update(self, time):
@@ -47,14 +49,14 @@ class ActionStatus:
 
         if time.get_time() >= self.ready_time:
             self.ready_time = None
+            if self.current_action != None and type(self.current_action) != Spell:
+                self.current_action = None
+                self.reset_auto_time(time)
 
         if self.cast_time is not None and time.get_time() >= self.cast_time:
-            logging.info("%.2f - [%s] Casting done: %s" % (time.get_time(),
-                                                           self.character,
-                                                           self.current_spell))
             self.cast_time = None
-            spell = self.current_spell
-            self.current_spell = None
+            spell = self.current_action
+            self.current_action = None
             return spell
 
         return None
@@ -65,68 +67,50 @@ class ActionStatus:
     def is_casting(self):
         return self.cast_time is not None
 
+    def reset_auto_time(self, time):
+        self.auto_time = time.get_time() + self.character.get_attack_speed()
 
-    def set_ready_time(self, spell, time):
-        logging.info("%.2f - [%s] Casting: %s" % (time.get_time(),
-                                                  self.character,
-                                                  spell))
+    def set_new_action(self, action, time):
+        if type(action) == Spell:
+            self.set_new_spell(action, time)
+        else:
+            self.set_new_auto(action, time)
+
+    def set_new_spell(self, spell, time):
+        self.reset_auto_time(time) # TODO check when auto timer is reset. certain spells reset it...
         if spell.cast_time > 0:
-            self.current_spell = spell
+            self.current_action = spell
             self.ready_time = time.get_time() + max(spell.cast_time, self.globalcd) + self.latency
             self.cast_time = time.get_time() + spell.cast_time
 
         else:
             self.ready_time = time.get_time() + self.globalcd + self.latency
 
-
-
-class ActionHandler:
-    def __init__(self, character):
-        self.character = character
-        self.cooldowns = {}
-
-        if self.character.name == "Rayjk":
-            self.spells = [Spell("Searing Pain (Rank 6)", 1.5, 0.0, 204, 241)]
-        else:
-            self.spells = [Spell("Shadowburn (Rank 6)", 0.0, 15.0, 450, 503),
-                           Spell("Shadow Bolt (Rank 10)", 2.5, 0.0, 482, 539)]
-            # self.spells = [Spell("Shadowburn (Rank 6)", 0.0, 15.0, 450, 503)]
-            # self.spells = [Spell("Shadow Bolt (Rank 10)", 2.5, 0, 482, 539)]
-
-    def get_next_spell(self, time):
-        self.update_cooldowns(time)
-
-        for spell in self.spells:
-            if self.is_on_cooldown(spell):
-                continue
-
-            self.set_cooldown(spell, time)
-            return spell
-
-        raise Exception("No spell available in priority.")
-
-    def is_on_cooldown(self, spell):
-        return spell in self.cooldowns
-
-    def update_cooldowns(self, time):
-        ready_spells = []
-        for spell in self.cooldowns:
-            if time.get_time() >= self.cooldowns[spell]:
-                ready_spells.append(spell)
-
-        for spell in ready_spells:
-            del self.cooldowns[spell]
-
-    def set_cooldown(self, spell, time):
-        if spell.cooldown > 0:
-            self.cooldowns[spell] = time.get_time() + spell.cooldown
+    def set_new_auto(self, action, time):
+        self.current_action = action
+        self.ready_time = self.auto_time + self.latency
 
 
 class DamageCounter:
     def __init__(self, character, target):
         self.character = character
-        self.target = target
+        self.calculator = DamageCalculator(character, target)
         self.damage_done = 0
 
-    def update_damage_done(self, spell):
-        self.damage_done += randint(spell.min_dmg, spell.max_dmg)
+    def update_damage_done(self, action, time):
+        new_damage = self.calculator.calculate_damage(action)
+        self.damage_done += new_damage
+
+        logging.info("%.2f - [%s] %s: %s" % (time.get_time(),
+                                             self.character,
+                                             action,
+                                             new_damage))
+
+
+class DamageCalculator:
+    def __init__(self, character, target):
+        self.character = character
+        self.target = target
+
+    def calculate_damage(self, action):
+        return randint(action.min_dmg, action.max_dmg)
