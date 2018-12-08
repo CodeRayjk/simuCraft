@@ -64,12 +64,12 @@ class ActionSequence(ActionHandler):
 def get_action_handler(character):
     if character.name == "Rayjk":
         return ActionSequence([AutoShot(61, 114),
-                               Spell("Arcane Shot (Rank 8)", 0.0, 6.0, 183, 183),
+                               Spell("Arcane Shot (Rank 8)", 0, 6000, 183, 183),
                                AutoShot(61, 114),
                                AutoShot(61, 114)])
     else:
-        return ActionPriority([Spell("Shadowburn (Rank 6)", 0.0, 15.0, 450, 503),
-                               Spell("Shadow Bolt (Rank 10)", 2.5, 0.0, 482, 539)])
+        return ActionPriority([Spell("Shadowburn (Rank 6)", 0, 15000, 450, 503),
+                               Spell("Shadow Bolt (Rank 10)", 2500, 0, 482, 539)])
 
     # [Spell("Searing Pain (Rank 6)", 1.5, 0.0, 204, 241)]
 

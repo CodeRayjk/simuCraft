@@ -1,5 +1,5 @@
 class Character:
-    def __init__(self, name, attack_speed=2.8):
+    def __init__(self, name, attack_speed=2800):
         self.name = name
         self.attack_speed = attack_speed
 

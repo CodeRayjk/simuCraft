@@ -4,6 +4,7 @@ import argparse
 import logging
 
 import Engine.simulation as sim
+from model.character import Character
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(levelname)s - %(message)s')
@@ -27,9 +28,11 @@ def run(args):
 
     logging.debug('INSIDE RUN')
 
-    simulation = sim.Simulation(20, None, ["Gurkis", "Rayjk"])
-    # simulation = sim.Simulation(10, None, ["Rayjk"])
-    # simulation = sim.Simulation(17, None, ["Gurkis"])
+    gurkis = Character("Gurkis")
+    rayjk = Character("Rayjk")
+    simulation = sim.Simulation(20000, None, [gurkis, rayjk])
+    # simulation = sim.Simulation(10000, None, [rayjk])
+    # simulation = sim.Simulation(17000, None, [gurkis])
     simulation.run()
 
     return 0

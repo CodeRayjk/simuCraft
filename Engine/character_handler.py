@@ -1,7 +1,7 @@
 import logging
 from random import randint
 
-from model.actions import Spell
+from model.actions import Spell, AutoShot, AutoAttack
 from Engine.action_handler import get_action_handler
 
 class CharacterHandler:
@@ -10,37 +10,42 @@ class CharacterHandler:
         self.target = target
         self.status = ActionStatus(self.character)
         self.action_handler = get_action_handler(character)
+        self.current_action = None
         self.damage_counter = DamageCounter(self.character, self.target)
 
     def update(self, time):
-        spell = self.status.update(time)
-        if spell is not None:
-            self.damage_counter.update_damage_done(spell, time)
+        self.status.update(time)
+
+        if self.current_action is not None and not self.status.is_casting():
+            self.do_action(time)
 
         while self.status.is_ready():
-            self.do_next_action(time)
+            self.handle_next_action(time)
 
-    def do_next_action(self, time):
-        action = self.action_handler.get_next_action(time)
-        instant_action = self.status.set_new_action(action, time)
+    def handle_next_action(self, time):
+        self.current_action = self.action_handler.get_next_action(time)
+        self.status.set_new_action(self.current_action, time)
 
-        if instant_action is not None:
-            self.damage_counter.update_damage_done(instant_action, time)
-
+        if not self.status.is_casting():
+            self.do_action(time)
 
     def print_statistics(self):
         logging.info("[%s] Damage done: %s" % (self.character,
                                                self.damage_counter.damage_done))
 
+    def do_action(self, time):
+        self.status.action_done(time)
+        self.damage_counter.update_damage_done(self.current_action, time)
+        self.current_action = None
+
 
 class ActionStatus:
     def __init__(self, character):
-        self.current_action = None
         self.ready_time = None
         self.cast_time = None
-        self.auto_time = 0.0
-        self.latency = 0.005
-        self.globalcd = 1.5
+        self.auto_time = 0
+        self.latency = 5
+        self.globalcd = 1500
         self.character = character
 
     def update(self, time):
@@ -49,17 +54,9 @@ class ActionStatus:
 
         if time.get_time() >= self.ready_time:
             self.ready_time = None
-            if self.current_action is not None and type(self.current_action) != Spell:
-                action = self.current_action
-                self.current_action = None
-                self.reset_auto_time(time)
-                return action
 
         if self.cast_time is not None and time.get_time() >= self.cast_time:
             self.cast_time = None
-            spell = self.current_action
-            self.current_action = None
-            return spell
 
         return None
 
@@ -74,34 +71,28 @@ class ActionStatus:
 
     def set_new_action(self, action, time):
         if type(action) == Spell:
-            return self.set_new_spell(action, time)
+            self.set_new_spell(action, time)
         else:
-            return self.set_new_auto(action, time)
+            self.set_new_auto(time)
 
     def set_new_spell(self, spell, time):
-        self.reset_auto_time(time) # TODO check when auto timer is reset. certain spells reset it...
         if spell.cast_time > 0:
-            self.current_action = spell
             self.ready_time = time.get_time() + max(spell.cast_time, self.globalcd) + self.latency
             self.cast_time = time.get_time() + spell.cast_time
-            return None
 
         else:
             self.ready_time = time.get_time() + self.globalcd + self.latency
-            return spell
 
-    def set_new_auto(self, action, time):
-        ret_action = None
-        if self.auto_time <= time.get_time():
-            ret_action = action
-            self.reset_auto_time(time)
-            self.ready_time = time.get_time() + self.latency
-        else:
-            self.current_action = action
+    def set_new_auto(self, time):
+        if self.auto_time > time.get_time():
             self.ready_time = self.auto_time + self.latency
+            self.cast_time = self.auto_time
+        else:
+            self.ready_time = time.get_time() + self.latency
 
-        return ret_action
-
+    def action_done(self, time):
+        # TODO research when auto timer is reset...
+        self.reset_auto_time(time)
 
 
 class DamageCounter:
@@ -114,7 +105,7 @@ class DamageCounter:
         new_damage = self.calculator.calculate_damage(action)
         self.damage_done += new_damage
 
-        logging.info("%.2f - [%s] %s: %s" % (time.get_time(),
+        logging.info("%.3f - [%s] %s: %s" % (time.get_time()/1000,
                                              self.character,
                                              action,
                                              new_damage))

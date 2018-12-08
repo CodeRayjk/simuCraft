@@ -1,4 +1,5 @@
 import time
+import logging
 
 from model.character import Character
 from Engine.character_handler import CharacterHandler
@@ -6,7 +7,7 @@ from Engine.character_handler import CharacterHandler
 class SimulatedTime:
     def __init__(self, total_time):
         self._current_time = 0
-        self._time_per_tick = 0.001
+        self._time_per_tick = 1
         self._total_time = total_time
         self._use_real_time = False
 
@@ -17,7 +18,7 @@ class SimulatedTime:
             time.sleep(self._time_per_tick)
 
     def end_of_time(self):
-        return self._current_time >= self._total_time
+        return self._current_time > self._total_time
 
     def get_time(self):
         return self._current_time
@@ -32,8 +33,7 @@ class Simulation:
         self.setup_charater_handlers(characters)
 
     def setup_charater_handlers(self, characters):
-        for name in characters:
-            character = Character(name)
+        for character in characters:
             self.character_handlers.append(CharacterHandler(character, self.target))
 
     def run(self):
