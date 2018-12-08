@@ -95,6 +95,7 @@ class ActionStatus:
         self.reset_auto_time(time)
 
 
+
 class DamageCounter:
     def __init__(self, character, target):
         self.character = character
@@ -105,7 +106,7 @@ class DamageCounter:
         new_damage = self.calculator.calculate_damage(action)
         self.damage_done += new_damage
 
-        logging.info("%.3f - [%s] %s: %s" % (time.get_time()/1000,
+        logging.info("%.2f - [%s] %s: %s" % (time.get_time()/1000,
                                              self.character,
                                              action,
                                              new_damage))

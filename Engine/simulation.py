@@ -7,7 +7,7 @@ from Engine.character_handler import CharacterHandler
 class SimulatedTime:
     def __init__(self, total_time):
         self._current_time = 0
-        self._time_per_tick = 1
+        self._time_per_tick = 10
         self._total_time = total_time
         self._use_real_time = False
 
