@@ -67,6 +67,11 @@ def get_action_handler(character):
                                Spell("Arcane Shot (Rank 8)", 0, 6000, 183, 183),
                                AutoShot(61, 114),
                                AutoShot(61, 114)])
+        # return ActionSequence([AutoShot(61, 114),
+        #                        Spell("Arcane Shot (Rank 8)", 0, 6000, 183, 183),
+        #                        AutoShot(61, 114),
+        #                        Spell("Ap Shot (Rank 8)", 0, 6000, 183, 183),
+        #                        AutoShot(61, 114)])
     else:
         return ActionPriority([Spell("Shadowburn (Rank 6)", 0, 15000, 450, 503),
                                Spell("Shadow Bolt (Rank 10)", 2500, 0, 482, 539)])
