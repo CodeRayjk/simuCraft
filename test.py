@@ -105,6 +105,87 @@ class TestActionStatus(unittest.TestCase):
         self.assertTrue(status.is_casting())
 
 
+    def test_long_spell(self):
+        time = SimulatedTime(20000)
+        status = ActionStatus(self.character)
+        long_spell = Spell("Test Spell", 2000, 0, 0, 0)
+
+        self.assertFalse(status.is_casting())
+
+        status.set_new_action(long_spell, time)
+
+        self.assertTrue(status.is_casting())
+
+        while time.get_time() < 2000:
+            self.assertTrue(status.is_casting())
+            time.tick()
+            status.update(time)
+
+        self.assertFalse(status.is_casting())
+
+        status.action_done(time)
+
+
+    def test_global_cooldown(self):
+        time = SimulatedTime(20000)
+        status = ActionStatus(self.character)
+        instant_spell = Spell("Test Spell", 0, 0, 0, 0)
+
+        self.assertFalse(status.is_casting())
+
+        status.set_new_action(instant_spell, time)
+
+        self.assertFalse(status.is_casting())
+
+        status.action_done(time)
+        status.set_new_action(instant_spell, time)
+
+        self.assertTrue(status.is_casting())
+
+        while time.get_time() < status.globalcd:
+            self.assertTrue(status.is_casting())
+            time.tick()
+            status.update(time)
+
+        # one extra for latency
+        time.tick()
+        status.update(time)
+
+        self.assertFalse(status.is_casting())
+
+        status.action_done(time)
+
+
+    def test_instant_and_cast(self):
+        time = SimulatedTime(20000)
+        status = ActionStatus(self.character)
+        instant_spell = Spell("Test Spell", 0, 0, 0, 0)
+        cast_spell = Spell("Test Spell", 500, 0, 0, 0)
+
+        self.assertFalse(status.is_casting())
+
+        status.set_new_action(instant_spell, time)
+
+        self.assertFalse(status.is_casting())
+
+        status.action_done(time)
+        status.set_new_action(cast_spell, time)
+
+        self.assertTrue(status.is_casting())
+
+        while time.get_time() < status.globalcd + 500:
+            self.assertTrue(status.is_casting())
+            time.tick()
+            status.update(time)
+
+        # one extra for latency
+        time.tick()
+        status.update(time)
+
+        self.assertFalse(status.is_casting())
+
+        status.action_done(time)
+
 
 if __name__ == '__main__':
     unittest.main()
