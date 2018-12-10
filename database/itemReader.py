@@ -1,6 +1,7 @@
 
 import csv
 import sys,os
+import logging
 my_path = os.path.abspath(os.path.dirname(__file__))
 ''''
 "2825","2","2","Bow of Searing Arrows","20552","4","0","1","73609","14721","15","-1","-1","42","37","0","0","0","0","0","0","0","0","1","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","47","88","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","2700","2","100","29624","1","0","0","-1","0","-1","0","0","0","0","-1","0","-1","0","0","0","0","-1","0","-1","0","0","0","0","-1","0","-1","0","0","0","0","0","0","-1","2","","0","0","0","0","0","2","0","0","0","0","90","0","0","0","","61","0","0","0","0","0"
@@ -99,9 +100,12 @@ attributeConv = {'3': 'Agility' , '4':'Strength', '5' : 'Intellect', '6' : 'Spir
 # '21':'main weapon': '22':'off weapon', '14': 'shield' , '28' : 'idol/lib/totem', '15': 'bow' ,
 # '26' : 'gun/crossbow/wand'
 
+
+
+
 slots ={ '1' : 'head' , '2' : 'amulet', '3':'shoulders','5': 'chest','6':'waist', '7':'legs','8':'feet',
  '9': 'wrist','10': 'hands','11':'Rings','12':'trinket','13':'One-hand','16': 'cloak', '17':'Two-hand',
- '21':'Main hand', '22':'Off hand', '14': 'Shield' , '28' : 'idol/lib/totem', '15': 'Ranged' ,
+ '21':'Main hand', '22':'Off hand', '14': 'Shield' , '28' : 'idol/lib/totem', '15': 'Ranged' , '24': 'Ammo',
  '26' : 'Ranged'}
 
 
@@ -116,6 +120,9 @@ class Item():
     def printAll(self):
         for key,item in self.info.items():
             print('%s:%s' %(key,item))
+
+    def getAttribute(self,**kwargs):
+        pass
 
 
 class Spell():
@@ -159,6 +166,9 @@ class ObjectReader():
         self.allCastTimes = []
         self.indexCastSpeed = self._fReader(readSpellCast,self.allCastTimes)
 
+        readItem = None
+        readSpell = None
+        readSpellCast = None
 
     def _fReader(self,obj,list):
         index = None
@@ -171,14 +181,21 @@ class ObjectReader():
 
         return index
 
+    def __getCastSpeed(self,id):
+
+        for row in self.allCastTimes:
+            if row[self.indexCastSpeed.index('ID')] == id:
+                return row[self.indexCastSpeed.index('Base')]
+
+
     def getItem(self,itemName):
 
         #DELAY
         theItem = None
         for row in self.allItem:
-            if itemName == row[self.indexItem.index('name')]:
+            if itemName.lower() == row[self.indexItem.index('name')].lower():
                 theItem = Item(Name = row[self.indexItem.index('name')])
-
+                logging.debug(row)
                 #print(row[self.indexItem.index('delay')])
 
                 if row[self.indexItem.index('armor')] is not '0':
@@ -232,22 +249,22 @@ class ObjectReader():
     def getSpell(self,spellName,rank = '0'):
 
         """
-        SpellName :
-        SpellRank :
-        EffectBasePoints1:
-        EffectDieSides1:
-        EffectBaseDice1:
-        ManaCost:
-        ProcChance:
-        School :
-        CastingTimeIndex:
+        SpellName : done
+        SpellRank : done
+        EffectBasePoints1: done
+        EffectDieSides1: done
+        EffectBaseDice1: done
+        ManaCost: done
+        ProcChance: done
+        School : done
+        CastingTimeIndex: done
 
         """
         theSpell = None
         for row in self.allSpells:
-            if spellName == row[self.indexSpell.index('SpellName')] and \
-                    rank == row[self.indexSpell.index('Rank')]:
-
+            if spellName.lower() == row[self.indexSpell.index('SpellName')].lower() and \
+                    rank.lower() == row[self.indexSpell.index('Rank')].lower():
+                logging.debug(row)
                 #print(row[self.indexSpell.index('EffectBasePoints1')])
                 if row[self.indexSpell.index('EffectBasePoints1')] is not '0':
                     theSpell = Spell(SpellName=spellName, Rank=rank)
@@ -262,6 +279,19 @@ class ObjectReader():
                     theSpell.addAttribute(dmg_min = str(minDmg))
                     theSpell.addAttribute(dmg_max = str(maxDmg))
 
+                    theSpell.addAttribute(dmg_type = dmgType[row[self.indexSpell.index('School')]])
+
+                    theSpell.addAttribute(CastTime =
+                                          self.__getCastSpeed(row[self.indexSpell.index('CastingTimeIndex')]))
+
+                    if row[self.indexSpell.index('ManaCost')] is not '0':
+                        theSpell.addAttribute(ManaCost = row[self.indexSpell.index('ManaCost')])
+
+                    if row[self.indexSpell.index('ProcChance')] is not '0':
+                        theSpell.addAttribute(ProcChance = row[self.indexSpell.index('ProcChance')])
+
+
+
                     #print(minDmg)
                     #print(maxDmg)
                     #for i,items in enumerate(row):
@@ -274,48 +304,29 @@ class ObjectReader():
 
         return theSpell
 
+    def clean(self):
+        self.allItem = []
+        self.allCastTimes = []
+        self.allSpells = []
 
 
 
 
-#edward = oReader.getItem('Blade of Eternal Darkness')
-#ragnaros = oReader.getItem('Draconic Avenger')
 
-#edward.printAll()
-#ragnaros.printAll()
+
 if __name__ == '__main__':
     oReader = ObjectReader()
 
-    sB =oReader.getSpell('Shadow Bolt','Rank 1')
+    edward = oReader.getItem('Blade of Eternal Darkness')
+    ragnaros = oReader.getItem('Draconic Avenger')
 
+    sB =oReader.getSpell('Shadow bolt','Rank 9')
+
+    print('---------------------------')
+    edward.printAll()
+    print ( '---------------------------')
+    ragnaros.printAll()
+    print('---------------------------')
     sB.printAll()
-#oReader.getSpell('Shadow Bolt','Rank 2')
-
-"""""
-
-
-
-AllItem = csv.reader(open('C:\\Users\\Rayjk\PycharmProjects\simuCraft\database\item_template.csv'),delimiter = ',')
-first = True
-firstRow = None
-for row in AllItem:
-    for item in row:
-        if 'Might of' in item:
-            #print(row)
-            print(row[firstRow.index('name')])
-            if row[firstRow.index('armor')] is not '0':
-                print( 'Armor : %s' % row[firstRow.index('armor')])
-
-            for i in range(1,6):
-                if row[firstRow.index('stat_type%d' % i)] is not '0':
-                    print('%s : %s' % (attributeConv[row[firstRow.index('stat_type%d' % i)]], row[firstRow.index('stat_value%d' % i)]))
-
-            print('---------------------')
-
-            #print( '%s : %s' % (attributeConv[row[firstRow.index('stat_type1')]],row[firstRow.index('stat_value1')]))
-            #print('%s : %s' % (attributeConv[row[firstRow.index('stat_type2')]], row[firstRow.index('stat_value2')]))
-            #print('%s : %s' % (attributeConv[row[firstRow.index('stat_type3')]], row[firstRow.index('stat_value3')]))
-
-
-"""
+    print('---------------------------')
 
