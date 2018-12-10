@@ -113,30 +113,73 @@ class Item():
     def addAttribute(self,**kwargs):
         self.info.update(kwargs)
 
-    def print(self):
+    def printAll(self):
+        for key,item in self.info.items():
+            print('%s:%s' %(key,item))
+
+
+class Spell():
+    def __init__(self, **kwargs):
+        self.info = kwargs
+
+    def addAttribute(self,**kwargs):
+        #print('INSIDE ADD')
+        #print (kwargs)
+        self.info.update(kwargs)
+        #print(self.info)
+
+    def printAll(self):
         for key,item in self.info.items():
             print('%s:%s' %(key,item))
 
 
 
+
 class ObjectReader():
+
+
+
     def __init__(self):
-        filePath = os.path.join(my_path, "item_template.csv")
-        readItem = csv.reader(open(filePath),delimiter = ',')
+        filePathItem = os.path.join(my_path, "item_template.csv")
+        readItem = csv.reader(open(filePathItem),delimiter = ',')
+
+        filePathSpell = os.path.join(my_path, "spell_template.csv")
+        readSpell = csv.reader(open(filePathSpell), delimiter=',')
+
+        filePathCast = os.path.join(my_path, "SpellCastTimes.csv")
+        readSpellCast = csv.reader(open(filePathCast), delimiter=',')
+
         self.allItem = []
-        for line in readItem:
-            self.indexItem = line
+        self.indexItem = self._fReader(readItem,self.allItem)
+
+
+        self.allSpells = []
+        self.indexSpell = self._fReader(readSpell,self.allSpells)
+
+        self.allCastTimes = []
+        self.indexCastSpeed = self._fReader(readSpellCast,self.allCastTimes)
+
+
+    def _fReader(self,obj,list):
+        index = None
+
+        for line in obj:
+            index = line
             break
-        for line in readItem:
-            self.allItem.append(line)
+        for line in obj:
+            list.append(line)
+
+        return index
 
     def getItem(self,itemName):
+
+        #DELAY
         theItem = None
         for row in self.allItem:
             if itemName == row[self.indexItem.index('name')]:
                 theItem = Item(Name = row[self.indexItem.index('name')])
 
-                print(row[self.indexItem.index('InventoryType')])
+                #print(row[self.indexItem.index('delay')])
 
                 if row[self.indexItem.index('armor')] is not '0':
                     theItem.addAttribute(Armor = row[self.indexItem.index('armor')])
@@ -176,6 +219,8 @@ class ObjectReader():
                     theItem.addAttribute(arcane_res=row[self.indexItem.index('arcane_res')])
 
 
+                if row[self.indexItem.index('delay')] is not '0':
+                    theItem.addAttribute(AttackSpeed=row[self.indexItem.index('delay')])
 
 
                 if row[self.indexItem.index('InventoryType')] is not '0':
@@ -184,18 +229,67 @@ class ObjectReader():
 
         return theItem
 
-    def getSpell(self):
-        pass
+    def getSpell(self,spellName,rank = '0'):
+
+        """
+        SpellName :
+        SpellRank :
+        EffectBasePoints1:
+        EffectDieSides1:
+        EffectBaseDice1:
+        ManaCost:
+        ProcChance:
+        School :
+        CastingTimeIndex:
+
+        """
+        theSpell = None
+        for row in self.allSpells:
+            if spellName == row[self.indexSpell.index('SpellName')] and \
+                    rank == row[self.indexSpell.index('Rank')]:
+
+                #print(row[self.indexSpell.index('EffectBasePoints1')])
+                if row[self.indexSpell.index('EffectBasePoints1')] is not '0':
+                    theSpell = Spell(SpellName=spellName, Rank=rank)
+
+                    minDmg = int(row[self.indexSpell.index('EffectBasePoints1')]) + \
+                             int(row[self.indexSpell.index('EffectBaseDice1')])
+
+                    maxDmg = int(row[self.indexSpell.index('EffectBasePoints1')]) + \
+                             (int(row[self.indexSpell.index('EffectDieSides1')]) * \
+                             int(row[self.indexSpell.index('EffectBaseDice1')]) + 1 )
+
+                    theSpell.addAttribute(dmg_min = str(minDmg))
+                    theSpell.addAttribute(dmg_max = str(maxDmg))
+
+                    #print(minDmg)
+                    #print(maxDmg)
+                    #for i,items in enumerate(row):
+                    #    print('%s : %s' % (self.indexSpell[i] , items))
+                    #print(self.indexSpell[i])
+                #theItem = Item(Name = row[self.indexItem.index('name')])
+
+
+                    #theSpell.printAll()
+
+        return theSpell
 
 
 
-oReader = ObjectReader()
 
-edward = oReader.getItem('Blade of Eternal Darkness')
-ragnaros = oReader.getItem('Draconic Avenger')
 
-edward.print()
-ragnaros.print()
+#edward = oReader.getItem('Blade of Eternal Darkness')
+#ragnaros = oReader.getItem('Draconic Avenger')
+
+#edward.printAll()
+#ragnaros.printAll()
+if __name__ == '__main__':
+    oReader = ObjectReader()
+
+    sB =oReader.getSpell('Shadow Bolt','Rank 1')
+
+    sB.printAll()
+#oReader.getSpell('Shadow Bolt','Rank 2')
 
 """""
 
