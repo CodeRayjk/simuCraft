@@ -23,6 +23,16 @@ Character:
     Rangedslot: Gorewood Bow
     Quiver: pass
     Ammo: Jagged Arrow
+  Spells:
+    1:
+      Name: Arcane Shot
+      Rank: Rank 5
+      Condition: None
+    2:
+      Name: Serpent Sting
+      Rank: Rank 5
+      Condition: None
+
 
 Pet: pass
 

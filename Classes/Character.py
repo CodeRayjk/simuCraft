@@ -16,6 +16,11 @@ class Character:
 
         self.items.append(self.oReader.getItem(item))
 
+    def addSpell(self,spell,rank,condition = 0):
+
+        self.spells.append(self.oReader.getSpell(spell,rank))
+
+
     def getStats(self):
 
         stats = []
@@ -32,6 +37,9 @@ class Character:
             print('------------')
             item.printAll()
 
+        for spell in self.spells:
+            print('-----------')
+            spell.printAll()
 
 
 class CreateCharacter:
@@ -53,6 +61,12 @@ class CreateCharacter:
         for item in data['Character']['Item']:
             if not data['Character']['Item'][item] == 'pass':
                 munchkin.addItem(data['Character']['Item'][item])
+
+
+        for spell in data['Character']['Spells']:
+            munchkin.addSpell(data['Character']['Spells'][spell]['Name'],data['Character']['Spells'][spell]['Rank'])
+
+
 
         munchkin.printSelf()
 

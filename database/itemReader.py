@@ -156,9 +156,13 @@ class ObjectReader():
         filePathCast = os.path.join(my_path, "SpellCastTimes.csv")
         readSpellCast = csv.reader(open(filePathCast), delimiter=',')
 
+
+        filePathDuration = os.path.join(my_path, "SpellDuration.csv")
+        readSpellDur =  csv.reader(open(filePathDuration), delimiter=',')
+
+
         self.allItem = []
         self.indexItem = self._fReader(readItem,self.allItem)
-
 
         self.allSpells = []
         self.indexSpell = self._fReader(readSpell,self.allSpells)
@@ -166,9 +170,15 @@ class ObjectReader():
         self.allCastTimes = []
         self.indexCastSpeed = self._fReader(readSpellCast,self.allCastTimes)
 
+        self.allCastDurations = []
+        self.indexCastDuration = self._fReader(readSpellDur,self.allCastDurations)
+
+
+
         readItem = None
         readSpell = None
         readSpellCast = None
+        readSpellDur = None
 
     def _fReader(self,obj,list):
         index = None
@@ -180,6 +190,13 @@ class ObjectReader():
             list.append(line)
 
         return index
+
+
+    def __getSpellDuration(self,id):
+
+        for row in self.allCastDurations:
+            if row[self.indexCastDuration.index('ID')] == id:
+                return row[self.indexCastDuration.index('Duration')]
 
     def __getCastSpeed(self,id):
 
@@ -258,26 +275,40 @@ class ObjectReader():
         ProcChance: done
         School : done
         CastingTimeIndex: done
-
+        CategoryRecoveryTime: done
+        DurationIndex:
+        EffectAmplitude1:
         """
         theSpell = None
         for row in self.allSpells:
             if spellName.lower() == row[self.indexSpell.index('SpellName')].lower() and \
                     rank.lower() == row[self.indexSpell.index('Rank')].lower():
-                logging.debug(row)
+
+                #print(row)
                 #print(row[self.indexSpell.index('EffectBasePoints1')])
-                if row[self.indexSpell.index('EffectBasePoints1')] is not '0':
+                if row[self.indexSpell.index('BaseLevel')] is not '0':
                     theSpell = Spell(SpellName=spellName, Rank=rank)
 
-                    minDmg = int(row[self.indexSpell.index('EffectBasePoints1')]) + \
-                             int(row[self.indexSpell.index('EffectBaseDice1')])
+                    for i in range(1,3):
+                        if row[self.indexSpell.index('Effect%s' % str(i))] is not '0':
+                            minDmg = int(row[self.indexSpell.index('EffectBasePoints%s'% str(i))]) + \
+                                     int(row[self.indexSpell.index('EffectBaseDice%s'% str(i))])
 
-                    maxDmg = int(row[self.indexSpell.index('EffectBasePoints1')]) + \
-                             (int(row[self.indexSpell.index('EffectDieSides1')]) * \
-                             int(row[self.indexSpell.index('EffectBaseDice1')]) + 1 )
+                            maxDmg = int(row[self.indexSpell.index('EffectBasePoints%s'% str(i))]) + \
+                                     (int(row[self.indexSpell.index('EffectDieSides%s'% str(i))]) * \
+                                     int(row[self.indexSpell.index('EffectBaseDice%s'% str(i))]) + 1 )
 
-                    theSpell.addAttribute(dmg_min = str(minDmg))
-                    theSpell.addAttribute(dmg_max = str(maxDmg))
+
+                            if row[self.indexSpell.index('Effect%s'% str(i))] == '2':
+                                theSpell.addAttribute(dmg_min = str(minDmg))
+                                theSpell.addAttribute(dmg_max = str(maxDmg))
+                            elif row[self.indexSpell.index('Effect%s'% str(i))] == '6':
+                                theSpell.addAttribute(dmg_dot_min = str(minDmg))
+                                theSpell.addAttribute(dmg_dot_max = str(maxDmg))
+
+                                if row[self.indexSpell.index('EffectAmplitude1')] is not '0':
+                                    theSpell.addAttribute(DotInterval =
+                                                          row[self.indexSpell.index('EffectAmplitude%s'% str(i))])
 
                     theSpell.addAttribute(dmg_type = dmgType[row[self.indexSpell.index('School')]])
 
@@ -290,12 +321,18 @@ class ObjectReader():
                     if row[self.indexSpell.index('ProcChance')] is not '0':
                         theSpell.addAttribute(ProcChance = row[self.indexSpell.index('ProcChance')])
 
+                    if row[self.indexSpell.index('CategoryRecoveryTime')] is not '0':
+                        theSpell.addAttribute(Cooldown = row[self.indexSpell.index('CategoryRecoveryTime')])
+
+
+                    theSpell.addAttribute(Duration =
+                                          self.__getSpellDuration(row[self.indexSpell.index('DurationIndex')]))
 
 
                     #print(minDmg)
                     #print(maxDmg)
-                    #for i,items in enumerate(row):
-                    #    print('%s : %s' % (self.indexSpell[i] , items))
+                    for i,items in enumerate(row):
+                        print('%s : %s' % (self.indexSpell[i] , items))
                     #print(self.indexSpell[i])
                 #theItem = Item(Name = row[self.indexItem.index('name')])
 
@@ -308,6 +345,8 @@ class ObjectReader():
         self.allItem = []
         self.allCastTimes = []
         self.allSpells = []
+        self.allCastDurations = []
+
 
 
 
@@ -317,15 +356,15 @@ class ObjectReader():
 if __name__ == '__main__':
     oReader = ObjectReader()
 
-    edward = oReader.getItem('Blade of Eternal Darkness')
-    ragnaros = oReader.getItem('Draconic Avenger')
+    #edward = oReader.getItem('Blade of Eternal Darkness')
+    #ragnaros = oReader.getItem('Draconic Avenger')
 
-    sB =oReader.getSpell('Shadow bolt','Rank 9')
+    sB =oReader.getSpell('Immolate','Rank 1')
 
     print('---------------------------')
-    edward.printAll()
+    #edward.printAll()
     print ( '---------------------------')
-    ragnaros.printAll()
+    #ragnaros.printAll()
     print('---------------------------')
     sB.printAll()
     print('---------------------------')
