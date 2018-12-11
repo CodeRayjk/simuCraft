@@ -1,7 +1,7 @@
 import logging
 from random import randint
 
-from model.actions import Spell
+from model.actions import Types
 from Engine.action_handler import get_action_handler
 
 class CharacterHandler:
@@ -67,7 +67,7 @@ class ActionStatus:
         self.auto_time = time.get_time() + self.character.get_attack_speed()
 
     def set_new_action(self, action, time):
-        if type(action) == Spell:
+        if action.type == Types.SPELL:
             self.set_new_spell(action, time)
         else:
             self.set_new_auto(time)
