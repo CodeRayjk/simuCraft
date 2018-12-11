@@ -1,5 +1,4 @@
 import logging
-from random import randint
 
 from model.actions import Types
 from Engine.action_handler import get_action_handler
@@ -9,9 +8,9 @@ class CharacterHandler:
         self.character = character
         self.target = target
         self.status = ActionStatus(self.character)
-        self.action_handler = get_action_handler(character)
+        self.action_handler = get_action_handler(character, target)
         self.current_action = None
-        self.damage_counter = DamageCounter(self.character, self.target)
+        self.statistics = Statistics()
 
     def update(self, time):
         self.status.update(time)
@@ -22,6 +21,8 @@ class CharacterHandler:
         while self.current_action is None:
             self.handle_next_action(time)
 
+        self.target.update_dots(time, self.statistics)
+
     def handle_next_action(self, time):
         self.current_action = self.action_handler.get_next_action(time)
         self.status.set_new_action(self.current_action, time)
@@ -30,12 +31,12 @@ class CharacterHandler:
             self.do_action(time)
 
     def print_statistics(self):
-        logging.info("[%s] Damage done: %s" % (self.character,
-                                               self.damage_counter.damage_done))
+        logging.info("[%s] %s" % (self.character,
+                                  self.statistics))
 
     def do_action(self, time):
         self.status.action_done(time)
-        self.damage_counter.update_damage_done(self.current_action, time)
+        self.current_action.cast(self.character, self.target, self.statistics, time)
         self.current_action = None
 
 
@@ -96,26 +97,12 @@ class ActionStatus:
 
 
 
-class DamageCounter:
-    def __init__(self, character, target):
-        self.character = character
-        self.calculator = DamageCalculator(character, target)
-        self.damage_done = 0
+class Statistics:
+    def __init__(self):
+        self.total_damage_done = 0
 
-    def update_damage_done(self, action, time):
-        new_damage = self.calculator.calculate_damage(action)
-        self.damage_done += new_damage
+    def update_damage_done(self, damage):
+        self.total_damage_done += damage
 
-        logging.info("%.2f - [%s] %s: %s" % (time.get_time()/1000,
-                                             self.character,
-                                             action,
-                                             new_damage))
-
-
-class DamageCalculator:
-    def __init__(self, character, target):
-        self.character = character
-        self.target = target
-
-    def calculate_damage(self, action):
-        return randint(action.min_dmg, action.max_dmg)
+    def __str__(self):
+        return "Total damage done: %s" % self.total_damage_done

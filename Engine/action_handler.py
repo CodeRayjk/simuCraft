@@ -1,5 +1,7 @@
+import logging
+
 from itertools import cycle
-from model.actions import Spell, AutoShot
+from model.actions import *
 
 class ActionHandler:
     def __init__(self):
@@ -15,26 +17,31 @@ class ActionHandler:
             del self.cooldowns[spell]
 
     def set_cooldown(self, action, time):
-        if type(action) != Spell:
+        if action.type != Types.SPELL:
             return
 
         if action.cooldown > 0:
             self.cooldowns[action] = time.get_time() + action.cooldown
 
     def is_on_cooldown(self, action):
-        return type(action) == Spell and action in self.cooldowns
+        return action.type == Types.SPELL and action in self.cooldowns
 
 
 
 class ActionPriority(ActionHandler):
-    def __init__(self, actions):
+    def __init__(self, actions, character, target):
         super(ActionPriority, self).__init__()
         self.actions = actions
+        self.character = character
+        self.target = target
 
     def get_next_action(self, time):
         self.update_cooldowns(time)
 
         for action in self.actions:
+            if self.target.has_dot(self.character, action.name):
+                continue
+
             if self.is_on_cooldown(action):
                 continue
 
@@ -61,20 +68,27 @@ class ActionSequence(ActionHandler):
         return action
 
 
-def get_action_handler(character):
+def get_action_handler(character, target):
     if character.name == "Rayjk":
         return ActionSequence([AutoShot(61, 114),
-                               Spell("Arcane Shot (Rank 8)", 0, 6000, 183, 183),
+                               DamageSpell("Arcane Shot (Rank 8)", 0, 6000, 183, 183),
                                AutoShot(61, 114),
-                               AutoShot(61, 114)])
+                               AutoAttack(31, 94)])
         # return ActionSequence([AutoShot(61, 114),
-        #                        Spell("Arcane Shot (Rank 8)", 0, 6000, 183, 183),
+        #                        DamageSpell("Arcane Shot (Rank 8)", 0, 6000, 183, 183),
         #                        AutoShot(61, 114),
-        #                        Spell("Ap Shot (Rank 8)", 0, 6000, 183, 183),
+        #                        DamageSpell("Ap Shot (Rank 8)", 0, 6000, 183, 183),
         #                        AutoShot(61, 114)])
     else:
-        return ActionPriority([Spell("Shadowburn (Rank 6)", 0, 15000, 450, 503),
-                               Spell("Shadow Bolt (Rank 10)", 2500, 0, 482, 539)])
+        immolate = CombinedSpell([DamageSpell("Immolate (Rank 8)", 2000, 0, 279, 279),
+                                  Dot("Immolate (Rank 8)", 0, 0, 102, 15000, 3000)])
+        corruption = Dot("Corruption (Rank 5)", 0, 0, 137, 18000, 3000)
+        shadowburn = DamageSpell("Shadowburn (Rank 6)", 0, 15000, 450, 503)
+        shadow_bolt = DamageSpell("Shadow Bolt (Rank 10)", 2500, 0, 482, 539)
 
-    # [Spell("Searing Pain (Rank 6)", 1.5, 0.0, 204, 241)]
-
+        return ActionPriority([immolate,
+                               corruption,
+                               shadowburn,
+                               shadow_bolt],
+                              character,
+                              target)
