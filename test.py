@@ -1,7 +1,7 @@
 import unittest
 
 from model.character import Character
-from model.actions import Spell, AutoShot
+from model.actions import DamageSpell, AutoShot
 from Engine.character_handler import ActionStatus
 from Engine.simulation import SimulatedTime
 
@@ -14,7 +14,7 @@ class TestActionStatus(unittest.TestCase):
     def test_casting(self):
         time = SimulatedTime(20000)
         status = ActionStatus(self.character)
-        spell = Spell("Test Spell", 1, 0, 0, 0)
+        spell = DamageSpell("Test Spell", 1, 0, 0, 0)
 
         self.assertFalse(status.is_casting())
 
@@ -26,7 +26,7 @@ class TestActionStatus(unittest.TestCase):
     def test_instant_cast(self):
         time = SimulatedTime(20000)
         status = ActionStatus(self.character)
-        spell = Spell("Test Spell", 0, 0, 0, 0)
+        spell = DamageSpell("Test Spell", 0, 0, 0, 0)
 
         self.assertFalse(status.is_casting())
 
@@ -60,7 +60,7 @@ class TestActionStatus(unittest.TestCase):
     def test_update(self):
         time = SimulatedTime(20000)
         status = ActionStatus(self.character)
-        spell = Spell("Test Spell", 1, 0, 0, 0)
+        spell = DamageSpell("Test Spell", 1, 0, 0, 0)
 
         self.assertFalse(status.is_casting())
 
@@ -79,7 +79,7 @@ class TestActionStatus(unittest.TestCase):
     def test_instant_cast_and_auto_shot(self):
         time = SimulatedTime(20000)
         status = ActionStatus(self.character)
-        spell = Spell("Test Spell", 0, 0, 0, 0)
+        spell = DamageSpell("Test Spell", 0, 0, 0, 0)
         shot = AutoShot(0, 0)
 
         self.assertFalse(status.is_casting())
@@ -108,7 +108,7 @@ class TestActionStatus(unittest.TestCase):
     def test_long_spell(self):
         time = SimulatedTime(20000)
         status = ActionStatus(self.character)
-        long_spell = Spell("Test Spell", 2000, 0, 0, 0)
+        long_spell = DamageSpell("Test Spell", 2000, 0, 0, 0)
 
         self.assertFalse(status.is_casting())
 
@@ -129,7 +129,7 @@ class TestActionStatus(unittest.TestCase):
     def test_global_cooldown(self):
         time = SimulatedTime(20000)
         status = ActionStatus(self.character)
-        instant_spell = Spell("Test Spell", 0, 0, 0, 0)
+        instant_spell = DamageSpell("Test Spell", 0, 0, 0, 0)
 
         self.assertFalse(status.is_casting())
 
@@ -159,8 +159,8 @@ class TestActionStatus(unittest.TestCase):
     def test_instant_and_cast(self):
         time = SimulatedTime(20000)
         status = ActionStatus(self.character)
-        instant_spell = Spell("Test Spell", 0, 0, 0, 0)
-        cast_spell = Spell("Test Spell", 500, 0, 0, 0)
+        instant_spell = DamageSpell("Test Spell", 0, 0, 0, 0)
+        cast_spell = DamageSpell("Test Spell", 500, 0, 0, 0)
 
         self.assertFalse(status.is_casting())
 
