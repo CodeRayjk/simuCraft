@@ -28,6 +28,17 @@ class Character:
 
         return stats
 
+    def attribute(self,attr):
+
+        for item in self.items:
+                tmp = item.getAttribute(attr)
+                if tmp:
+                    print( tmp )
+
+
+
+
+
     def printSelf(self):
         print('Name:%s' % self.name)
         print('Class:%s' % self.cClass)
@@ -46,12 +57,17 @@ class CreateCharacter:
     def __init__(self,file):
 
         with open(file, 'r') as stream:
-            data_loaded = yaml.load(stream)
+            self.data_loaded = yaml.load(stream)
 
-        print(data_loaded)
-        self.__cCreate(data_loaded)
 
-    def __cCreate(self,data):
+        #print(data_loaded)
+        #self.cCreate(data_loaded)
+
+    def cCreate(self, datain = 0):
+        if datain == 0:
+            data = self.data_loaded
+        else:
+            data = datain
 
         munchkin = Character(name=data['Character']['Name'],
                              cClass=data['Character']['Class'],
@@ -68,7 +84,7 @@ class CreateCharacter:
 
 
 
-        munchkin.printSelf()
+        #munchkin.printSelf()
 
 
 
@@ -84,4 +100,7 @@ class CreateCharacter:
 if __name__ == '__main__':
 
 
-    CreateCharacter('C:\\Users\Rayjk\PycharmProjects\simuCraft\demo.yml')
+    cc = CreateCharacter('C:\\Users\Rayjk\PycharmProjects\simuCraft\demoLock.yml')
+
+    rayjk = cc.cCreate()
+    rayjk.attribute('Intellect')

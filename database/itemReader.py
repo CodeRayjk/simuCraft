@@ -106,7 +106,7 @@ attributeConv = {'3': 'Agility' , '4':'Strength', '5' : 'Intellect', '6' : 'Spir
 slots ={ '1' : 'head' , '2' : 'amulet', '3':'shoulders','5': 'chest','6':'waist', '7':'legs','8':'feet',
  '9': 'wrist','10': 'hands','11':'Rings','12':'trinket','13':'One-hand','16': 'cloak', '17':'Two-hand',
  '21':'Main hand', '22':'Off hand', '14': 'Shield' , '28' : 'idol/lib/totem', '15': 'Ranged' , '24': 'Ammo',
- '26' : 'Ranged'}
+ '26' : 'Ranged','20':'Robe'}
 
 
 
@@ -121,8 +121,14 @@ class Item():
         for key,item in self.info.items():
             print('%s:%s' %(key,item))
 
-    def getAttribute(self,**kwargs):
-        pass
+    def getAttribute(self,attr):
+
+        for key,item in self.info.items():
+            if attr in key:
+                return item
+
+        return None
+
 
 
 class Spell():
@@ -134,6 +140,13 @@ class Spell():
         #print (kwargs)
         self.info.update(kwargs)
         #print(self.info)
+
+    def getAttribute(self,attr):
+        for key,item in self.info.items():
+            if attr in key:
+                return item
+
+        return None
 
     def printAll(self):
         for key,item in self.info.items():
@@ -331,8 +344,8 @@ class ObjectReader():
 
                     #print(minDmg)
                     #print(maxDmg)
-                    for i,items in enumerate(row):
-                        print('%s : %s' % (self.indexSpell[i] , items))
+                    #for i,items in enumerate(row):
+                    #    print('%s : %s' % (self.indexSpell[i] , items))
                     #print(self.indexSpell[i])
                 #theItem = Item(Name = row[self.indexItem.index('name')])
 

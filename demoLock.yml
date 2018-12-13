@@ -1,0 +1,46 @@
+Character:
+  Name: Gurkis
+  Class: Warlock
+  Level: 60
+  Race: Undead
+  Item:
+    Head: Dreadmist Mask
+    Amulet: Archlight Talisman
+    Shoulders: Dreadmist Mantle
+    Cloak: Frostweaver Cape
+    Chest: Dreadmist Robe
+    Waist: Dreadmist Belt
+    Legs: Dreadmist Leggings
+    Feet: Dreadmist Sandals
+    Wrist: Dreadmist Bracers
+    Hands: Dreadmist Wraps
+    Ring1: Tidal Loop
+    Ring2: Royal Seal of Alexis
+    Trinket1: pass
+    Trinket2: pass
+    MainHand: Whiteout Staff
+    OffHand: pass
+    Rangedslot: Stormrager
+    Quiver: pass
+    Ammo: pass
+  Spells:
+    1:
+      Name: Immolate
+      Rank: Rank 8
+      Condition: None
+    2:
+      Name: Corruption
+      Rank: Rank 5
+      Condition: None
+    3:
+      Name: Shadowburn
+      Rank: Rank 6
+      Condition: None
+    4:
+      Name: Shadow Bolt
+      Rank: Rank 10
+      Condition: None
+
+
+Pet: pass
+
