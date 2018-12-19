@@ -29,6 +29,7 @@ class Target:
 
         return False
 
+
     def update_dots(self, time, statistics):
         for character in self.dots:
             timedout_dots = []

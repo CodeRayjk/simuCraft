@@ -31,8 +31,8 @@ def run(args):
     gurkis = Character("Gurkis")
     rayjk = Character("Rayjk")
     target = Target()
-    # simulation = sim.Simulation(20000, None, [gurkis, rayjk])
-    # simulation = sim.Simulation(10000, None, [rayjk])
+    # simulation = sim.Simulation(20000, target, [gurkis, rayjk])
+    # simulation = sim.Simulation(10000, target, [rayjk])
     simulation = sim.Simulation(20000, target, [gurkis])
     simulation.run()
 

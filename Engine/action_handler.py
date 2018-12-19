@@ -71,7 +71,7 @@ class ActionSequence(ActionHandler):
 def get_action_handler(character, target):
     if character.name == "Rayjk":
         return ActionSequence([AutoShot(61, 114),
-                               DamageSpell("Arcane Shot (Rank 8)", 0, 6000, 183, 183),
+                               Spell("Arcane Shot", "Rank 8", 0, 6000, None, None, [[0, 183, 183]]),
                                AutoShot(61, 114),
                                AutoAttack(31, 94)])
         # return ActionSequence([AutoShot(61, 114),
@@ -80,11 +80,11 @@ def get_action_handler(character, target):
         #                        DamageSpell("Ap Shot (Rank 8)", 0, 6000, 183, 183),
         #                        AutoShot(61, 114)])
     else:
-        immolate = CombinedSpell([DamageSpell("Immolate (Rank 8)", 2000, 0, 279, 279),
-                                  Dot("Immolate (Rank 8)", 0, 0, 102, 15000, 3000)])
-        corruption = Dot("Corruption (Rank 5)", 0, 0, 137, 18000, 3000)
-        shadowburn = DamageSpell("Shadowburn (Rank 6)", 0, 15000, 450, 503)
-        shadow_bolt = DamageSpell("Shadow Bolt (Rank 10)", 2500, 0, 482, 539)
+        immolate = Spell("Immolate", "Rank 8", 2000, 0, None, None, [[0, 279, 279],
+                                                                     [1, 102, 103, 3000, 15000]])
+        corruption = Spell("Corruption", "Rank 5", 0, 0, None, None, [[1, 81, 82, 3000, 18000]])
+        shadowburn = Spell("Shadowburn", "Rank 6", 0, 15000, None, None, [[0, 450, 503]])
+        shadow_bolt = Spell("Shadow Bolt", "Rank 10", 2500, 0, None, None, [[0, 482, 539]])
 
         return ActionPriority([immolate,
                                corruption,
